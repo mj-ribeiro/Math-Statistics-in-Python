@@ -74,16 +74,18 @@ for i in range(n):
     
 # Resultado
     
+from time import sleep as slp
+
 cor()
 print("{:*^40s}".format("KALMAN FILTER")) 
 print('-='*20)
 print('S_t|t-1 {:>30}'.format('P_t|t-1'))
 print('-='*20)
-for i in range(len(s)):        
+for i in range(len(s)):  
+    #slp(1)      
     print(f'{s[i]:.<31.4f} {p[i]:.4f}')
 print('*'*40)
  
-  
 
 
 
