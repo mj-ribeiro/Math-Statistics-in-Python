@@ -14,7 +14,7 @@ def cor():
 
 
 cor()
-print("{:*^80s}".format("KALMAN FILTER")) 
+#print("{:*^80s}".format("KALMAN FILTER")) 
 
 
 
@@ -90,12 +90,6 @@ print('*'*40)
 
 
 # dicas de prints ver: https://www.geeksforgeeks.org/python-format-function/
-
-
-
-
-
-
 
 
 
