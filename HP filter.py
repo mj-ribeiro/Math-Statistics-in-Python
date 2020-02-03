@@ -46,7 +46,7 @@ lamb = 1600
 
 
 
-#--- calculate trend
+#----------------- calculate trend
 
 
 T = np.dot(np.linalg.inv((lamb*F + I)), y)
@@ -57,18 +57,27 @@ T = np.dot(np.linalg.inv((lamb*F + I)), y)
 C = y - T
 
 
-#--------------- graph
+#---------------- graph
+
 
 fig, ax = plt.subplots(1,2, figsize=(16,8))
 ax[0].plot(y, label='PIB')
 ax[0].plot(T, label='Trend')
+ax[0].set_title('Hodrick Prescott Filter')
 ax[0].legend()
 ax[1].plot(C,'b--', label='Cycle' )
 ax[1].legend()
+ax[1].set_title('Cyclical component')
+plt.axhline(y=0, color='black', linestyle='-')
+
+
+
+ 
 
 
 
 
+ 
 
 
 
