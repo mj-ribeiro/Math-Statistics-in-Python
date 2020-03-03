@@ -34,7 +34,7 @@ def c2(x):
     return sq
 
 
-x0 = [1, 5, 5, 1]
+x0 = [11, 533, 0.995, 0]
 print(f(x0))
 
 
@@ -51,7 +51,7 @@ cons = [con1, con2]
 sol = minimize(f, x0, method='SLSQP', \
                bounds=bnds, constraints=cons)
 
-
+sol 
 sol.fun
 sol.x
 
