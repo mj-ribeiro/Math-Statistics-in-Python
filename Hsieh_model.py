@@ -33,14 +33,6 @@ def par():
 
 
 
-
-
-
-
-
-
-
-
 #------------------------ h_til
 
 
@@ -81,18 +73,26 @@ def Hf( ):
     
     for c in range(i):               
             
-            c1[c] = ( 1/p_i[c] )**(b / eta)
-            E[c] = c1[c] * g
+        c1[c] = ( 1/p_i[c] )**(b / eta)
+        E[c] = c1[c] * g
             
-            for j in range(r): 
+        for j in range(r): 
             
-                H[c, j] = p_ir[c, j]*h_til[c, j] * ( ( (1 - tau_w[c, j])/(1 + tau_h[c, j]) ) * w[c, j] ) ** (eta/(1 - eta)) * E[c]
+            H[c, j] = p_ir[c, j]*h_til[c, j] * ( ( (1 - tau_w[c, j])/(1 + tau_h[c, j]) ) * w[c, j] ) ** (eta/(1 - eta)) * E[c]
           
     return H
 
 
 
- 
+#for t in range(10):
+#    Hf()
+#    taus()
+#    print(H.sum())
+#    
+#
+#taus()
+#Hf()
+#
 
 #----------------------------------------- s - time spent at school   (eq 14)
 
@@ -111,21 +111,29 @@ def sf( ):
 
 #----------------------------------------- w tilde
 
+def H_trf():
+    global H_tr
+    H_tr = np.ones((i, r))
+    return H_tr
+
 
 def w_tilf( ):
+    H_trf( )
     global w_til
     
     w_til = np.ones((i, r))
     
     for c in range(i):
         for j in range(r):
-            w_til[c, j] = ( (1 - tau_w[c, j]) / (1 + tau_h[c, j]) ** eta ) * 1**varphi * w[c, j] * s[c]**phi[c] * (1 - s[c]) ** ( (1- eta) /beta )           
-    
+            w_til[c, j] = ( (1 - tau_w[c, j]) / (1 + tau_h[c, j]) ** eta ) * H_tr[c, j]**varphi * w[c, j] * s[c]**phi[c] * (1 - s[c]) ** ( (1- eta) /beta )           
+
     return w_til
 
+taus()
+w_tilf()
 
-# tenho que colocar o H_tr aqui no lugar do 1
-    
+# tenho que mudar o H_tr 
+
 
 
 #------------------------------------------ p_ir
@@ -153,6 +161,8 @@ def p_irf( ):
 
 
 
+
+
 # p_ir.sum(axis=1)    # this sum get me a vector with ones
 
 
@@ -169,56 +179,76 @@ def Wf():
     return W
 
 
-
-
-
-
+    
+    
 #--------- Simulated data 
 
 
 def simul():
     global W_t, p_t
-    np.random.seed(3)
-    W_t = np.random.rand(i, r)   # simulated W - I get this in PNAD
+    #np.random.seed(3)
+    #W_t = np.random.rand(i, r)   # simulated W - I get this in PNAD
+    W_t = np.array(([0.8, 0.42, 0.33, 0.12], [0.99, 0.22, 0.154, 0.654]))
+
     
-    
-    np.random.seed(3)
-    p_t = np.random.rand(i, r)
+    #np.random.seed(3)
+    #p_t = np.random.rand(i, r)
+    p_t = np.array(([0.822, 0.32, 0.132, 0.109], [0.212, 0.453, 0.3524, 0.114]))
 
 
 
 
 #----------------------- Tau's  & w (TPF)
 
+#
+#def taus():
+#    global x0, tau_h, tau_w, w
+#    par()
+#    #np.random.seed(40)
+#    
+#    tau_h = np.random.rand(i, r)
+#    tau_w = np.random.rand(i, r)
+#    
+#    w = np.random.rand(i, r)
+#    
+#    x0 = np.array( [tau_w, tau_h, w] )
+#    
+#    return x0
+#    #x0 = x0.reshape(-1, 1)
+
 
 def taus():
+    global x0, tau_h, tau_w, w
     par()
-    global x0, tau_w, tau_h, w
-    np.random.seed(40)
+    #np.random.seed(40)
     
-    tau_h = np.random.rand(i, r)
-    tau_w = np.random.rand(i, r)
+    tau_h = np.ones((i, r))*0.2123
+    tau_w = np.ones((i, r))*0.5673
     
-    w = np.random.rand(i, r)
+    w = np.ones((i, r))*0.1345
     
-    x0 = np.array( [tau_w, tau_h, w] )
+    x0 = np.array([ [tau_w], [tau_h], [w] ])
+    x0 = x0.reshape(3, i, r)
     
-    x0 = x0.reshape(-1, 1)
+    return x0
+    #x0 = x0.reshape(-1, 1)
 
 
 
 #--------------------- OBJECTIVE FUNCTION
 
-
+ 
 
 def obj(tau):
-    #par()
-    taus()
-    simul()
+    global D, tau_w, tau_h, w
+    #taus()
     
     tau_w = tau[0]
     tau_h = tau[1]
-    w = tau[2]        
+    w = tau[2]
+    
+    print('tau_w = ', tau_w)    
+    print('  ')
     
     sf()
     w_tilf()
@@ -226,15 +256,78 @@ def obj(tau):
 
     Hf()
     Wf()
+    simul()
+
+    print('w_til =', w_til)
+    print('H =', H)
+    print('W =', W)
     
-    return np.sum( np.power( (W - W_t) / W_t, 2 )  + np.power( (p_ir - p_t) / p_t , 2 ) )
-    
+    D =  np.sum (( (W - W_t) / W_t)**2  +  ((p_ir - p_t) / p_t)**2) 
+
+    return D
+
+
+ 
+
+
+#------------ tests
+
+
+def zeta2():
+    global z, a, b, c
+    par( )
+    a = np.ones((i, r))*0.35
+    b = np.ones((i, r))*0.2908
+    c = np.ones((i, r))*0.156
+    z = np.array([a , b , c])
+    return z
+
+
+
+
+
+
+#----------------------------- OPTIMIZATION Scipy
+
+
 
 
 taus()
 obj(x0)
 
+w_tilf()
+
+del w_til
+
+sol = minimize(obj, x0,  method='Nelder-Mead')
  
+ 
+
+
+#--------------------------- OPTIMIZATION
+
+
+
+
+def hsieh(n):
+    global opt
+    opt = np.zeros(n)
+    
+    for z in range(n):
+        taus()
+        r = obj(x0)
+        opt[z] = r
+        print(z)
+        
+
+        
+hsieh(100000)
+
+opt.min()
+opt.max()
+
+
+    
 #-------------------- Constraints
     
 
@@ -272,17 +365,6 @@ cons = [con1, con2, con3]
 #
 #type(tau1)
 #type(bnds)
-
-
-#----------------------------- OPTIMIZATION
-
-import scipy.optimize as sp
-
-sol = minimize(obj, x0, method='SLSQP', options={'maxiter':10e6})
-
-sol
-
-
 
 
  
