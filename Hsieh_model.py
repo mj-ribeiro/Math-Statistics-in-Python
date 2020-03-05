@@ -18,7 +18,7 @@ from math import gamma
 
 
 def par():
-    global beta, eta, varphi, theta, rho, i, r, gamma1
+    global beta, eta, varphi, theta, rho, i, r, gamma1, phi
     beta = 0.69
     eta = 0.25
     varphi = 0.25
@@ -27,15 +27,15 @@ def par():
     i = 2
     r = 4
     gamma1 = gamma(1 - (theta*(1 - rho)**(-1)) * (1 - eta)**(-1))
-
-
-par()
-
+    phi = [0.138, 0.174]
 
 
 
 
-phi = [0.138, 0.174]
+
+
+
+
 
 
 
@@ -95,6 +95,7 @@ def Hf( ):
  
 
 #----------------------------------------- s - time spent at school   (eq 14)
+
 
 
 def sf( ):
@@ -175,13 +176,14 @@ def Wf():
 #--------- Simulated data 
 
 
-
-np.random.seed(3)
-W_t = np.random.rand(i, r)   # simulated W - I get this in PNAD
-
-
-np.random.seed(3)
-p_t = np.random.rand(i, r)
+def simul():
+    global W_t, p_t
+    np.random.seed(3)
+    W_t = np.random.rand(i, r)   # simulated W - I get this in PNAD
+    
+    
+    np.random.seed(3)
+    p_t = np.random.rand(i, r)
 
 
 
@@ -189,17 +191,19 @@ p_t = np.random.rand(i, r)
 #----------------------- Tau's  & w (TPF)
 
 
-
-np.random.seed(40)
-
-tau_h = np.random.rand(i, r)
-tau_w = np.random.rand(i, r)
-
-w = np.random.rand(i, r)
-
-x0 = np.array( [tau_w, tau_h, w] )
-
-x0 = x0.reshape(-1, 1)
+def taus():
+    par()
+    global x0, tau_w, tau_h, w
+    np.random.seed(40)
+    
+    tau_h = np.random.rand(i, r)
+    tau_w = np.random.rand(i, r)
+    
+    w = np.random.rand(i, r)
+    
+    x0 = np.array( [tau_w, tau_h, w] )
+    
+    x0 = x0.reshape(-1, 1)
 
 
 
@@ -208,6 +212,9 @@ x0 = x0.reshape(-1, 1)
 
 
 def obj(tau):
+    #par()
+    taus()
+    simul()
     
     tau_w = tau[0]
     tau_h = tau[1]
@@ -222,9 +229,12 @@ def obj(tau):
     
     return np.sum( np.power( (W - W_t) / W_t, 2 )  + np.power( (p_ir - p_t) / p_t , 2 ) )
     
+
+
+taus()
 obj(x0)
 
-
+ 
 #-------------------- Constraints
     
 
@@ -266,21 +276,13 @@ cons = [con1, con2, con3]
 
 #----------------------------- OPTIMIZATION
 
+import scipy.optimize as sp
 
-
-sol = minimize(obj, x0, method='trust-constr', options={'maxiter':10e6}, constraints=cons)
+sol = minimize(obj, x0, method='SLSQP', options={'maxiter':10e6})
 
 sol
 
 
-
-obj(x0)
-
-
-
-
-sol.fun
-sol.x
 
 
  
