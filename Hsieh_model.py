@@ -12,7 +12,10 @@ from scipy.optimize import minimize
 from math import gamma
 
 
+
 #----------------------- Defining parameters
+
+
 
 def par():
     global beta, eta, varphi, theta, rho, i, r, gamma1
@@ -55,7 +58,6 @@ def h_tilf( ):
     return h_til
 
 
-h_tilf()
 
 
 
@@ -90,7 +92,6 @@ def Hf( ):
 
 
 
-Hf( )
  
 
 #----------------------------------------- s - time spent at school   (eq 14)
@@ -105,7 +106,6 @@ def sf( ):
     return s
 
 
-sf()
 
 
 #----------------------------------------- w tilde
@@ -125,31 +125,34 @@ def w_tilf( ):
 
 # tenho que colocar o H_tr aqui no lugar do 1
     
-w_tilf( )
 
 
 #------------------------------------------ p_ir
     
         
 def p_irf( ):
-    global p_ir, p_i
+    global p_ir, p_i, w_r
     w_tilf( )
-    w_r = w_til.sum(axis = 0) 
-    
-    w_r = list(map(lambda x: x**theta, w_r))
+        
+    w_r = w_til**theta
+    w_r = w_r.sum(axis = 1) 
+
     
     p_ir = np.ones((i, r))
     
     for c in range(i):
         for j in range(r):
-            p_ir[c, j] = ( w_til[c, j] ) ** theta / w_r[j]
+            p_ir[c, j] = ( w_til[c, j] ) ** theta / w_r[c]
             
     #p_i = np.sum(p_ir)
 
     p_i = np.sum(p_ir, axis =1) 
     return p_ir
+ 
 
 
+
+# p_ir.sum(axis=1)    # this sum get me a vector with ones
 
 
 #---------------------------------------  W (eq 27)
@@ -166,7 +169,6 @@ def Wf():
 
 
 
-Wf()
 
 
 
@@ -187,23 +189,21 @@ p_t = np.random.rand(i, r)
 #----------------------- Tau's  & w (TPF)
 
 
-np.random.seed(4)
+
+np.random.seed(40)
 
 tau_h = np.random.rand(i, r)
 tau_w = np.random.rand(i, r)
 
 w = np.random.rand(i, r)
 
+x0 = np.array( [tau_w, tau_h, w] )
+
+x0 = x0.reshape(-1, 1)
 
 
 
-tau1 = [tau_w, tau_h, w]
-tau1 = np.array(tau)
-
-
-
-
-#--------------------- OBJECTIVE
+#--------------------- OBJECTIVE FUNCTION
 
 
 
@@ -213,33 +213,79 @@ def obj(tau):
     tau_h = tau[1]
     w = tau[2]        
     
-    Hf()
     sf()
     w_tilf()
     p_irf()
+
+    Hf()
     Wf()
     
-    return np.sum(( (W - W_t) / W_t ) ** 2 + ( (p_ir - p_t) / p_t )**2 )
+    return np.sum( np.power( (W - W_t) / W_t, 2 )  + np.power( (p_ir - p_t) / p_t , 2 ) )
     
-   
+obj(x0)
+
+
+#-------------------- Constraints
+    
+
+
+def c1(tau):
+    return tau_h[0, :]      
+        
+
+
+def c2(tau):    
+    return tau_w[0, : ] - tau_w[0, 0 ]
 
 
 
-obj(tau1)
+def c3(tau):
+    return w[:, r-1] - 1
+
+        
+    
 
 
-sol = minimize(obj, tau, method='Nelder-Mead', options={'maxiter':10e10})
+con1 = {'type': 'eq', 'fun':c1}
+con2 = {'type': 'eq', 'fun':c2}
+con3 = {'type': 'eq', 'fun':c3}
+
+
+cons = [con1, con2, con3]
+
+
+
+
+#len(bnds)
+#len(tau1)
+#
+#
+#type(tau1)
+#type(bnds)
+
+
+#----------------------------- OPTIMIZATION
+
+
+
+sol = minimize(obj, x0, method='trust-constr', options={'maxiter':10e6}, constraints=cons)
+
+sol
+
+
+
+obj(x0)
+
+
+
 
 sol.fun
 sol.x
 
- 
- 
 
  
 
  
-
 
 
 
