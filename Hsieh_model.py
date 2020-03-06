@@ -4,6 +4,9 @@ Created on Tue Mar  3 10:18:22 2020
 
 @author: Marcos J Ribeiro
 """
+# see this: https://pastebin.com/cvYBvW3B
+
+
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -129,8 +132,8 @@ def w_tilf( ):
 
     return w_til
 
-taus()
-w_tilf()
+#taus()
+#w_tilf()
 
 # tenho que mudar o H_tr 
 
@@ -201,22 +204,25 @@ def simul():
 #----------------------- Tau's  & w (TPF)
 
 #
-#def taus():
-#    global x0, tau_h, tau_w, w
-#    par()
-#    #np.random.seed(40)
-#    
-#    tau_h = np.random.rand(i, r)
-#    tau_w = np.random.rand(i, r)
-#    
-#    w = np.random.rand(i, r)
-#    
-#    x0 = np.array( [tau_w, tau_h, w] )
-#    
-#    return x0
-#    #x0 = x0.reshape(-1, 1)
+    
+def taus2():
+    global x1, tau_h, tau_w, w
+    par()
+    #np.random.seed(40)
+    
+    tau_h = np.random.rand(i, r)
+    tau_w = np.random.rand(i, r)
+    
+    w = np.random.rand(i, r)
+    
+    x1 = np.array( [tau_w, tau_h, w] )
+    
+    return x1
+    #x0 = x0.reshape(-1, 1)
 
 
+#
+    
 def taus():
     global x0, tau_h, tau_w, w
     par()
@@ -243,12 +249,13 @@ def obj(tau):
     global D, tau_w, tau_h, w
     #taus()
     
+    tau = tau.reshape((3, i, r))
     tau_w = tau[0]
     tau_h = tau[1]
     w = tau[2]
-    
-    print('tau_w = ', tau_w)    
-    print('  ')
+#    
+#    print('tau_w = ', tau_w)    
+#    print('  ')
     
     sf()
     w_tilf()
@@ -258,31 +265,29 @@ def obj(tau):
     Wf()
     simul()
 
-    print('w_til =', w_til)
-    print('H =', H)
-    print('W =', W)
+#    print('w_til =', w_til)
+#    print('H =', H)
+#    print('W =', W)
     
-    D =  np.sum (( (W - W_t) / W_t)**2  +  ((p_ir - p_t) / p_t)**2) 
+    D =  np.sum ( ((W - W_t) / W_t)**2  +  ((p_ir - p_t) / p_t)**2 ) 
 
     return D
 
 
- 
+  
 
 
 #------------ tests
 
-
-def zeta2():
-    global z, a, b, c
-    par( )
-    a = np.ones((i, r))*0.35
-    b = np.ones((i, r))*0.2908
-    c = np.ones((i, r))*0.156
-    z = np.array([a , b , c])
-    return z
-
-
+#
+#def zeta2():
+#    global z, a, b, c
+#    par( )
+#    a = np.ones((i, r))*0.35
+#    b = np.ones((i, r))*0.2908
+#    c = np.ones((i, r))*0.156
+#    z = np.array([a , b , c])
+#    return z
 
 
 
@@ -293,16 +298,21 @@ def zeta2():
 
 
 taus()
-obj(x0)
 
-w_tilf()
+taus2()
 
-del w_til
+obj(x1)
 
-sol = minimize(obj, x0,  method='Nelder-Mead')
+
+
+sol = minimize(obj, x1,  method='SLSQP', options={'maxiter':10e8})
+x0
+
+sol 
+sol.fun
+sol.x 
+
  
- 
-
 
 #--------------------------- OPTIMIZATION
 
@@ -314,14 +324,14 @@ def hsieh(n):
     opt = np.zeros(n)
     
     for z in range(n):
-        taus()
-        r = obj(x0)
+        taus2()
+        r = obj(x1)
         opt[z] = r
         print(z)
         
 
         
-hsieh(100000)
+hsieh(1000000)
 
 opt.min()
 opt.max()
@@ -333,16 +343,19 @@ opt.max()
 
 
 def c1(tau):
-    return tau_h[0, :]      
+    tau = tau.reshape((3, i, r))
+    return tau_h[0, :] - 0      
         
 
 
 def c2(tau):    
+    tau = tau.reshape((3, i, r))
     return tau_w[0, : ] - tau_w[0, 0 ]
 
 
 
 def c3(tau):
+    tau = tau.reshape((3, i, r))
     return w[:, r-1] - 1
 
         
@@ -354,26 +367,21 @@ con2 = {'type': 'eq', 'fun':c2}
 con3 = {'type': 'eq', 'fun':c3}
 
 
-cons = [con1, con2, con3]
+cons = [con3]
 
 
 
 
-#len(bnds)
-#len(tau1)
-#
-#
-#type(tau1)
-#type(bnds)
 
 
  
-
+sol = minimize(obj, x0, method='SLSQP', options={'maxiter':10e8})
+sol
  
 
 
-
-
+obj(x0)
+sol
 
 
 
