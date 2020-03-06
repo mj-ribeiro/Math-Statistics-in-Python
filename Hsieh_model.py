@@ -13,6 +13,10 @@ import matplotlib.pyplot as plt
 import math as mt
 from scipy.optimize import minimize
 from math import gamma
+import itertools as itl
+import time
+
+
 
 
 
@@ -211,9 +215,9 @@ def taus2():
     #np.random.seed(40)
     
     tau_h = np.random.rand(i, r)
-    tau_w = np.random.rand(i, r)
+    tau_w = np.random.uniform(low=-1, high=1, size=(i,r))
     
-    w = np.random.rand(i, r)
+    w =np.random.uniform(low=0, high=1, size=(i,r))
     
     x1 = np.array( [tau_w, tau_h, w] )
     
@@ -238,6 +242,8 @@ def taus():
     
     return x0
     #x0 = x0.reshape(-1, 1)
+
+
 
 
 
@@ -277,17 +283,6 @@ def obj(tau):
   
 
 
-#------------ tests
-
-#
-#def zeta2():
-#    global z, a, b, c
-#    par( )
-#    a = np.ones((i, r))*0.35
-#    b = np.ones((i, r))*0.2908
-#    c = np.ones((i, r))*0.156
-#    z = np.array([a , b , c])
-#    return z
 
 
 
@@ -298,46 +293,85 @@ def obj(tau):
 
 
 taus()
+obj(x0)
+
+
 
 taus2()
-
 obj(x1)
 
 
 
-sol = minimize(obj, x1,  method='SLSQP', options={'maxiter':10e8})
-x0
+sol = minimize(obj, x0,  method='Nelder-Mead', options={'maxiter':10e10, 'adaptive': True})
 
 sol 
+
 sol.fun
 sol.x 
 
+
+
+#--------------------------- OPTIMIZATION Marcos's Algorithm
  
-
-#--------------------------- OPTIMIZATION
-
-
 
 
 def hsieh(n):
-    global opt
-    opt = np.zeros(n)
+    global opt, k
+    opt = [12]
+    k = np.zeros((3, i, r))
+
+    for z in itl.count():
+        if z < n+1:
+            taus2()
+            res = obj(x1)
+            print(z)
+            if res < opt[0]:
+                opt.remove(opt[0])
+                opt.append(res)
+                k = x1
+        else: 
+            break
+
+
+
+def calibration(v):
+    start = time.time()
+    hsieh(v)
+    end = time.time()
+            
+    print('\033[1;033m=-'*25)
+    print('{:*^50}'.format('Hsieh Model'))
+    print('=-'*25)
+    print('   ')
     
-    for z in range(n):
-        taus2()
-        r = obj(x1)
-        opt[z] = r
-        print(z)
-        
-
-        
-hsieh(1000000)
-
-opt.min()
-opt.max()
-
-
+    print('\033[1;033mElapsed time:', end - start)
+    print('   ')
     
+    print(f'The minimun value to D is: {opt}')
+    print('   ')
+
+    print(f'tau_w is given by: \n {k[0]}')
+    print('   ')
+
+    print(f'tau_h is given by: \n {k[1]}')
+    print('   ')
+
+    print(f'w is given by: \n {k[2]}')
+    print('   ')
+
+    print('{:*^50}'.format('End of calibration'))
+
+
+
+calibration(10000)
+
+#9.88
+#10.08
+#9.27
+#8.23 scipy
+# 8.85
+
+
 #-------------------- Constraints
     
 
@@ -367,15 +401,15 @@ con2 = {'type': 'eq', 'fun':c2}
 con3 = {'type': 'eq', 'fun':c3}
 
 
-cons = [con3]
-
-
+cons = [con2]
 
 
 
 
  
-sol = minimize(obj, x0, method='SLSQP', options={'maxiter':10e8})
+taus2()
+ 
+sol = minimize(obj, x1, method='SLSQP', options={'maxiter':10e8}, constraints=cons)
 sol
  
 
