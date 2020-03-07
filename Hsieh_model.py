@@ -5,7 +5,7 @@ Created on Tue Mar  3 10:18:22 2020
 @author: Marcos J Ribeiro
 """
 # see this: https://pastebin.com/cvYBvW3B
-
+# The model can be viewed in:  https://drive.google.com/drive/u/0/folders/1MOOHg2woM6B2MCLohTPk-kbIgO5RLbVZ
 
 
 import numpy as np
