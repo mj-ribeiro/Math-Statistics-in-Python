@@ -368,9 +368,7 @@ def calibration(v, t=12):
 
 
 
-calibration(10000, 2.5)
-
-
+calibration(1000000, 4)
 
 #-------------------- Constraints
     
