@@ -15,7 +15,7 @@ def pib(c0, c1, t0=0, t1=0, t=0, b0=0, b1=0, i=0):
     t0: tributo autônomo
     t1: propensão a tributar
     t: tributos
-    b0: investimento autônomo
+    b0: confiança nos negócios
     b1: propensão a investir
     i: investimento
     '''
