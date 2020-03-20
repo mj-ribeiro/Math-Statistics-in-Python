@@ -65,15 +65,15 @@ def h_tilf( ):
  
 
 def Hf( ):
-    global H, E, c1
+    taus2()
+    global H, E, c1, g, b, a 
     h_tilf( )
     
     a = 1/ theta* ( 1 - rho )
     b = 1/ ( 1 - eta )
     
     g = gamma(1 - a * b)
-              
-    
+                  
     H = np.zeros((i, r))
     c1 = np.zeros(i)
     E = np.zeros(i)
@@ -84,8 +84,8 @@ def Hf( ):
         E[c] = c1[c] * g
             
         for j in range(r): 
-            
-            H[c, j] = p_ir[c, j]*h_til[c, j] * ( ( (1 - tau_w[c, j])/(1 + tau_h[c, j]) ) * w[c, j] ) ** (eta/(1 - eta)) * E[c]
+#            
+            H[c, j] = p_ir[c, j]*h_til[c, j] * ( ( (1 - x1[0, c, j])/(1 + x1[1, c, j]) ) * x1[2, c, j] ) ** (eta/(1 - eta)) * E[c]
           
     return H
 
@@ -119,7 +119,9 @@ def H_trf():
     return H_tr
 
 
+
 def w_tilf( ):
+    taus2( )
     H_trf( )
     global w_til
     
@@ -127,7 +129,7 @@ def w_tilf( ):
     
     for c in range(i):
         for j in range(r):
-            w_til[c, j] = ( (1 - tau_w[c, j]) / (1 + tau_h[c, j]) ** eta ) * H_tr[c, j]**varphi * w[c, j] * s[c]**phi[c] * (1 - s[c]) ** ( (1- eta) /beta )           
+            w_til[c, j] = ( (1 - x1[0, c, j]) / (1 + x1[1, c, j]) ** eta ) * H_tr[c, j]**varphi * x1[2, c, j] * s[c]**phi[c] * (1 - s[c]) ** ( (1- eta) /beta )           
 
     return w_til
 
@@ -159,9 +161,6 @@ def p_irf( ):
  
 
 
-
-
-
 # p_ir.sum(axis=1)    # this sum get me a vector with ones
 
 
@@ -170,16 +169,18 @@ def p_irf( ):
 
 
 def Wf():
+    taus2( )
     global W
     W = np.zeros((i, r))
     
     for c in range(i):
         for j in range(r):
-            W[c, j] = ((1 - s[c])**(-1/beta))/(1-tau_w[c, j])*gamma1*eta*(w_til[c, j]**theta)**(1/(theta*(1 - eta)))     #        (eq 27)
+            W[c, j] = ((1 - s[c])**(-1/beta))/(1-x1[0, c, j])*gamma1*eta*(w_til[c, j]**theta)**(1/(theta*(1 - eta)))     #        (eq 27)
     return W
 
 
-    
+ 
+
     
 #--------- Simulated data 
 
@@ -262,19 +263,35 @@ def obj(tau):
     Hf()
     Wf()
     simul()
-
+    f1 = np.zeros((i, r))
+    f2 = np.zeros((i, r))
     
-#    D =  np.sum ( ((W - W_t) / W_t)**2  +  ((p_ir - p_t) / p_t)**2 ) 
-    D = np.sum( ( np.dot( (W-W_t), np.linalg.pinv(W_t) ) )**2 + ( np.dot( (p_ir - p_t), np.linalg.pinv(p_t) ) )**2 )
-
+    
+    for c in range(i):
+        for j in range(r):
+            f1[c, j] = ( (W[c, j] - W_t[c, j]) / W_t[c, j] ) ** 2
+            f2[c, j] = ( (p_ir[c, j] - p_t[c, j])  /  p_t[c, j] ) ** 2
+    d1 = np.sum(f1)
+    d2 = np.sum(f2)
+    D = d1 + d2
+    
+#   D =  np.sum ( ((W - W_t) / W_t)**2  +  ((p_ir - p_t) / p_t)**2 ) 
+    #D = np.sum( ( np.dot( (W-W_t), np.linalg.pinv(W_t) ) )**2 + ( np.dot( (p_ir - p_t), np.linalg.pinv(p_t) ) )**2 )
     return D
 
 
-#pseudo inverse de Moore-Penrose
+
+# pseudo inverse de Moore-Penrose
+# restrição do Nelder-Mead
+# slsqp   
 
 
 
 #----------------------------- OPTIMIZATION Scipy
+
+obj(x1)
+taus2()
+
 
 
 import scipy.optimize as sp
@@ -282,24 +299,19 @@ import scipy.optimize as sp
 
 sp.fmin(obj, x1)
 
-taus2()
-w_tilf()
-w_til**theta 
-
-taus()
-obj(x0)
 
 
 taus2()
 obj(x1)
 
 
-sol = minimize(obj, x1,  method='Nelder-Mead', options={'maxiter':10e5})
+sol = minimize(obj, x1,  method='Nelder-Mead', options={'maxiter':10000})
 
 sol 
 sol.fun
 sol.x 
 
+taus2()
 
 
 #--------------------------- OPTIMIZATION Marcos's Algorithm
@@ -363,7 +375,7 @@ def calibration(v, t=12):
 
 
 
-calibration(1000, 4)
+calibration(10000, 20)
 
 
 
