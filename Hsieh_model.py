@@ -305,13 +305,17 @@ taus2()
 obj(x1)
 
 
-sol = minimize(obj, x1,  method='Nelder-Mead', options={'maxiter':10000})
+sol = minimize(obj, x1,  method='Nelder-Mead', options={'maxiter':10e5})
 
 sol 
 sol.fun
 sol.x 
 
 taus2()
+
+
+
+
 
 
 #--------------------------- OPTIMIZATION Marcos's Algorithm
@@ -375,7 +379,7 @@ def calibration(v, t=12):
 
 
 
-calibration(10000, 20)
+calibration(1000000, 15)
 
 
 
@@ -384,63 +388,4 @@ calibration(10000, 20)
 
 
 
-#-------------------- Constraints
-    
-
-
-def c1(tau):
-    tau = tau.reshape((3, i, r))
-    return tau_h[0, :] - 0      
-        
-
-
-def c2(tau):    
-    tau = tau.reshape((3, i, r))
-    return tau_w[0, : ] - tau_w[0, 0 ]
-
-
-
-def c3(tau):
-    tau = tau.reshape((3, i, r))
-    return w[:, r-1] - 1
-
-        
-    
-
-
-con1 = {'type': 'eq', 'fun':c1}
-con2 = {'type': 'eq', 'fun':c2}
-con3 = {'type': 'eq', 'fun':c3}
-
-
-cons = [con2]
-
-
-
-
- 
-taus2()
- 
-sol = minimize(obj, x1, method='SLSQP', options={'maxiter':10e8}, constraints=cons)
-sol
- 
-
-
-obj(x0)
-sol
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+###################  END
