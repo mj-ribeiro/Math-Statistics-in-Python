@@ -60,7 +60,7 @@ def h_tilf( ):
 
 
 
-#------------------------ Agregate Human capital   (eq 21)
+#------------------------ Agregate Human capital   (eq 23)
 
  
 
@@ -91,17 +91,10 @@ def Hf( ):
 
 
 
-#for t in range(10):
-#    Hf()
-#    taus()
-#    print(H.sum())
-#    
-#
-#taus()
-#Hf()
-#
+
 
 #----------------------------------------- s - time spent at school   (eq 14)
+
 
 
 
@@ -116,7 +109,9 @@ def sf( ):
 
 
 
-#----------------------------------------- w tilde
+#----------------------------------------- w tilde  (Proposition 1)
+
+
 
 def H_trf():
     global H_tr
@@ -136,14 +131,11 @@ def w_tilf( ):
 
     return w_til
 
-#taus()
-#w_tilf()
-
-# tenho que mudar o H_tr 
 
 
 
-#------------------------------------------ p_ir
+
+#------------------------------------------ p_ir  (eq 19)
     
         
 def p_irf( ):
@@ -200,6 +192,7 @@ def simul():
     p_t = np.array(([0.822, 0.32, 0.132, 0.109], [0.212, 0.453, 0.3524, 0.114]))
 
 
+
 #----------------------- Tau's  & w (TPF)
 
 #
@@ -222,7 +215,6 @@ def taus2():
     
     return x1
     #x0 = x0.reshape(-1, 1)
-
 
 
 #
@@ -278,10 +270,12 @@ def obj(tau):
     return D
 
 
+#pseudo inverse de Moore-Penrose
 
 
 
 #----------------------------- OPTIMIZATION Scipy
+
 
 import scipy.optimize as sp
 
@@ -305,6 +299,7 @@ sol = minimize(obj, x1,  method='Nelder-Mead', options={'maxiter':10e5})
 sol 
 sol.fun
 sol.x 
+
 
 
 #--------------------------- OPTIMIZATION Marcos's Algorithm
@@ -368,7 +363,14 @@ def calibration(v, t=12):
 
 
 
-calibration(1000000, 4)
+calibration(1000, 4)
+
+
+
+
+
+
+
 
 #-------------------- Constraints
     
