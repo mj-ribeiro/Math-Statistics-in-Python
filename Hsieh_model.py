@@ -109,14 +109,28 @@ def sf( ):
 
 
 
-#----------------------------------------- w tilde  (Proposition 1)
+
+#----------------------------------------- Human capital of teachers
 
 
 
 def H_trf():
+    
+    taus2()    
+    sf()
+    
     global H_tr
-    H_tr = np.ones((i, r))*0.5
+    H_tr = np.zeros(r)
+    
+    for j in range(r):
+        H_tr[j] = ( p_ir[i-1, j] * (s[i-1] ** phi[i-1]* eta)**(1/(1-eta))* ( (1 - x1[0, i-1, j])/(1 - x1[1, i-1, j])* x1[2, i-1, j] )** (eta/1-eta) * E[i-1] ) ** ((1-eta)/ 1-eta-varphi)
     return H_tr
+
+
+
+
+
+#----------------------------------------- w tilde  (Proposition 1)
 
 
 
@@ -129,7 +143,7 @@ def w_tilf( ):
     
     for c in range(i):
         for j in range(r):
-            w_til[c, j] = ( (1 - x1[0, c, j]) / (1 + x1[1, c, j]) ** eta ) * H_tr[c, j]**varphi * x1[2, c, j] * s[c]**phi[c] * (1 - s[c]) ** ( (1- eta) /beta )           
+            w_til[c, j] = ( (1 - x1[0, c, j]) / (1 + x1[1, c, j]) ** eta ) * H_tr[j]**varphi * x1[2, c, j] * s[c]**phi[c] * (1 - s[c]) ** ( (1- eta) /beta )           
 
     return w_til
 
@@ -159,7 +173,7 @@ def p_irf( ):
     p_i = np.sum(p_ir, axis =1) 
     return p_ir
  
-
+ 
 
 # p_ir.sum(axis=1)    # this sum get me a vector with ones
 
@@ -196,12 +210,14 @@ def simul():
 
 #----------------------- Tau's  & w (TPF)
 
-#
+
+
+
     
 def taus2():
     global x1, tau_h, tau_w, w
     par()
-    #np.random.seed(40)
+    
     
     tau_h = np.random.rand(i, r)
     tau_h[0, :] = 0
@@ -215,28 +231,7 @@ def taus2():
     x1 = np.array( [tau_w, tau_h, w] )
     
     return x1
-    #x0 = x0.reshape(-1, 1)
-
-
-#
-    
-def taus():
-    global x0, tau_h, tau_w, w
-    par()
-    #np.random.seed(40)
-    
-    tau_h = np.ones((i, r))*0.2123
-    tau_w = np.ones((i, r))*0.5673
-    
-    w = np.ones((i, r))*0.1345
-    
-    x0 = np.array([ [tau_w], [tau_h], [w] ])
-    x0 = x0.reshape(3, i, r)
-    
-    return x0
-    #x0 = x0.reshape(-1, 1)
-
-
+   
 
 
 
@@ -252,10 +247,7 @@ def obj(tau):
     tau_w = tau[0]
     tau_h = tau[1]
     w = tau[2]
-#    
-#    print('tau_w = ', tau_w)    
-#    print('  ')
-    
+
     sf()
     w_tilf()
     p_irf()
@@ -274,44 +266,55 @@ def obj(tau):
     d1 = np.sum(f1)
     d2 = np.sum(f2)
     D = d1 + d2
-    
-#   D =  np.sum ( ((W - W_t) / W_t)**2  +  ((p_ir - p_t) / p_t)**2 ) 
-    #D = np.sum( ( np.dot( (W-W_t), np.linalg.pinv(W_t) ) )**2 + ( np.dot( (p_ir - p_t), np.linalg.pinv(p_t) ) )**2 )
+
     return D
 
 
-
-# pseudo inverse de Moore-Penrose
-# restrição do Nelder-Mead
-# slsqp   
 
 
 
 #----------------------------- OPTIMIZATION Scipy
 
-obj(x1)
-taus2()
-
-
-
-import scipy.optimize as sp
-
-
-sp.fmin(obj, x1)
-
-
-
 taus2()
 obj(x1)
 
 
-sol = minimize(obj, x1,  method='Nelder-Mead', options={'maxiter':10e5})
 
-sol 
-sol.fun
-sol.x 
 
-taus2()
+
+def calibration(v):
+    
+    global D
+    start = time.time()
+    sol = minimize(obj, x1,  method='Nelder-Mead', options={'maxiter':v})
+    end = time.time()
+            
+    print('\033[1;033m=-'*25)
+    print('{:*^50}'.format('Hsieh Model'))
+    print('=-'*25)
+    print('   ')
+    
+    print('\033[1;033mElapsed time:', (end - start))
+    print('   ')
+        
+
+    print(f'tau_w is given by: \n {np.around(sol.x[0:8].reshape(i, r), decimals=4)}')
+    print('   ')
+
+    print(f'tau_h is given by: \n {np.around(sol.x[8:16].reshape(i, r), decimals=4)}')
+    print('   ')
+
+    print(f'w is given by: \n {np.around(sol.x[16:24].reshape(i, r), decimals=4) }')
+    print('   ')
+
+    print(f'The minimun value to D is: {sol.fun}')
+    print('   ') 
+    
+    print('{:*^50}'.format('End of calibration'))
+
+
+calibration(10e5)
+
 
 
 
@@ -320,6 +323,8 @@ taus2()
 
 #--------------------------- OPTIMIZATION Marcos's Algorithm
  
+
+
 
 def hsieh(n, t=12):
     global opt, k
@@ -348,7 +353,7 @@ obj(x1)
 
 
 
-def calibration(v, t=12):
+def calibration2(v, t=12):
     
     start = time.time()
     hsieh(v, t)
@@ -379,7 +384,7 @@ def calibration(v, t=12):
 
 
 
-calibration(1000000, 15)
+calibration2(100000, 15)
 
 
 
