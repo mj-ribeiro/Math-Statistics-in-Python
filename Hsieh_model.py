@@ -202,9 +202,9 @@ def Wf():
 def simul():
     global W_t, p_t
     
-    W_t = np.array(([0.8, 0.42, 0.33, 0.12], [0.99, 0.22, 0.154, 0.654]))  
+    W_t = np.array(([0.1, 0.42, 0.33, 0.12], [0.99, 0.22, 0.154, 0.654]))  
     
-    p_t = np.array(([0.822, 0.32, 0.132, 0.109], [0.212, 0.453, 0.3524, 0.114]))
+    p_t = np.array(([0.122, 0.12, 0.132, 0.109], [0.212, 0.453, 0.3524, 0.114]))
 
 
 
@@ -313,16 +313,11 @@ def calibration(v):
     print('{:*^50}'.format('End of calibration'))
 
 
-calibration(10e5)
-
-
-
-
+calibration(10e3)
 
 
 
 #--------------------------- OPTIMIZATION Marcos's Algorithm
- 
 
 
 
