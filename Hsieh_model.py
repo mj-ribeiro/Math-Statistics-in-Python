@@ -28,14 +28,15 @@ def par():
     global beta, eta, varphi, theta, rho, i, r, gamma1, phi, kappa
     beta = 0.69
     eta = 0.25
-    varphi = 1/3
-    theta = 3
+    varphi = 0.25
+    theta = 3.44
     rho = 0.19
-    kappa = 1/ 1-eta
+    kappa = 1/(1- eta)
     i = 2
     r = 4
-    gamma1 = gamma(1 - (theta*(1 - rho)**(-1)) * (1 - eta)**(-1))
+    gamma1 = gamma(1 - ( (theta*(1-rho)) **(-1) )   * (1 - eta)**(-1)  )    
     phi = [0.138, 0.174]
+
 
 
 
@@ -104,10 +105,8 @@ def sf( ):
     s = np.zeros((i, 1))
     
     for c in range(i):
-        s[c] = (1+ (1-eta)/beta*phi[c])**(-1)                        
+        s[c] = (1+ (1-eta)/ (beta*phi[c]) ) ** (-1)                        
     return s
-
-
 
 
 
@@ -131,45 +130,64 @@ def H_trf():
     S = np.zeros(i)
     N = np.zeros((i, r))
     H = np.zeros((i, r))
-    
-    
+        
     for c in range(i):
         for j in range(r):
             
             S[c] = ( s[c]**phi[c]*eta**eta ) ** kappa
-            P[j] = ( ( ( 1 - x1[0].sum(axis=0)[j] ) / ( ( 1 - x1[1].sum(axis=0)[j] )**eta) ) * x1[2].sum(axis=0)[j] )** (theta - kappa)
-            T[c, j] = ( ( 1 - x1[0, c, j] ) * x1[2, c, j] ) ** ( theta - 1) 
+            P[j] = ( ( ( 1 - x1[0].sum(axis=0)[j] ) / ( ( 1 + x1[1].sum(axis=0)[j] )**eta) ) * ( x1[2].sum(axis=0)[j] ) ) ** (theta - kappa)
+            T[c, j] = ( ( 1 - x1[0, c, j] ) * x1[2, c, j] ) ** ( theta - kappa +kappa*eta) 
             N[c, j] = ( 1 + x1[1, c, j]) ** (eta*theta) 
             
-            H[c, j] = ( T[c, j] * S[c] * gamma1 ) / ( N[c, j] * P[j]) 
+            H[c, j] = ( ( T[c, j] * S[c] * gamma1 ) / ( N[c, j] * P[j]) ** (1/(1-varphi*kappa)))  
 
     H_tr = H[i-1, :]
     return H_tr
 
 
 
-
+#---------------- p_ir (other aproach)
+#
+#def pf2():
+#    global ps
+#    
+#    #taus2()
+#    q1 = np.zeros((i, r))
+#    q2 = np.zeros(r)
+#    ps = np.zeros((i, r))
+#    for c in range(i):
+#        for j in range(r):
+#            q1[c, j] = ( ( (1 - x1[0, c, j]) / (1 + x1[1, c, j])**eta ) * (x1[2, c, j]) ) **theta 
+#            q2[j] = ( ( (1 - x1[0].sum(axis=0)[j]) / (1 + x1[1].sum(axis=0)[j] )**eta ) * ( x1[2].sum(axis=0)[j] ) ) ** theta
+#            ps[c, j] = ( (q1[c, j] ) / (q2[j] ) ) 
+#    return ps
+#
+#
+#pf2() 
+#
+#ps.sum(axis=0)
 
 #----------------------------------------- w tilde  (Proposition 1)
 
 
 def w_tilf( ):
+    
+    par( )
     taus2( )
     H_trf( )
     
     global w_til
     
-    w_til = np.ones((i, r))
+    w_til = np.zeros((i, r))
     
     for c in range(i):
         for j in range(r):
-#            w_til[c, j] = ( (1 - x1[0, c, j]) / ( (1 + x1[1, c, j]) ** eta) ) * H_tr[j]**varphi * x1[2, c, j] * s[c]**phi[c] * (1 - s[c]) ** ( (1- eta) /beta )           
-            w_til[c, j] = ( (1 - x1[0, c, j]) / ( (1 + x1[1, c, j]) ** eta) ) * (np.sign(H_tr[j])* np.abs(H_tr[j])**varphi)  * x1[2, c, j] * s[c]**phi[c] * (1 - s[c]) ** ( (1- eta) /beta )           
+            w_til[c, j] = ( (1 - x1[0, c, j]) / ( (1 + x1[1, c, j]) ** eta) ) * H_tr[j]**varphi * x1[2, c, j] * s[c]**phi[c] * (1 - s[c]) ** ( (1- eta) /beta )           
+            #w_til[c, j] = ( (1 - x1[0, c, j]) / ( (1 + x1[1, c, j]) ** eta) ) * (np.sign(H_tr[j])* np.abs(H_tr[j])**varphi)  * x1[2, c, j] * s[c]**phi[c] * (1 - s[c]) ** ( (1- eta) /beta )           
 
-    return w_til
+    return w_til 
 
 
- 
 
 #------------------------------------------ p_ir  (eq 19)
     
@@ -178,22 +196,26 @@ def p_irf( ):
     global p_ir, p_i, w_r
     w_tilf( )
         
-    w_r = np.sign(w_til)*np.abs(w_til)**theta
-    w_r = w_r.sum(axis = 1) 
+    #w_r = np.sign(w_til)*np.abs(w_til)**theta
+    w_r = w_til**theta
+    w_r = w_r.sum(axis = 0) 
 
-    
-    p_ir = np.ones((i, r))
+     
+    p_ir = np.zeros((i, r))
     
     for c in range(i):
         for j in range(r):
            # p_ir[c, j] = (( w_til[c, j] )) ** theta / w_r[c]
-             p_ir[c, j] = ((np.sign(w_til[c, j])* np.abs(w_til[c, j])**theta) ) / w_r[c]            
+             p_ir[c, j] = ((np.sign(w_til[c, j])* np.abs(w_til[c, j])**theta) ) / w_r[j]            
     #p_i = np.sum(p_ir)
 
-    p_i = np.sum(p_ir, axis =1) 
+    p_i = np.sum(p_ir, axis =0)  
     return p_ir
 
- 
+
+for c in range(i):
+        for j in range(r):
+            print(f'p_ir= {(( w_til[c, j] )) ** theta / w_r[c] }')
 
 
 #(np.sign(w_til[0, 1])* np.abs(w_til[0, 1])**theta)
@@ -204,19 +226,18 @@ def p_irf( ):
 
 
 def Wf():
+    p_irf( )
     taus2( )
     global W
     W = np.zeros((i, r))
     
     for c in range(i):
         for j in range(r):
-            W[c, j] = ((1 - s[c])**(-1/beta))/(1-x1[0, c, j])*gamma1*eta*(w_til[c, j]**theta)**(1/(theta*(1 - eta)))     #        (eq 27)
+            W[c, j] = ((1 - s[c])**(-1/beta))/( 1 - x1[0, c, j] )*gamma1*eta*(w_r[j])**(1/(theta*(1 - eta)))     #        (eq 27)
     return W
 
 
- 
 
-    
 #--------- Simulated data 
 
 
@@ -240,7 +261,7 @@ def taus2():
     par()
     
     
-    tau_h = np.random.rand(i, r)
+    tau_h = np.random.uniform(low=-100, high=100, size=(i,r))
     tau_h[0, :] = 0
 
     tau_w = np.random.uniform(low=-1, high=1, size=(i,r))
@@ -253,7 +274,6 @@ def taus2():
     
     return x1
    
-
 
 
 #--------------------- OBJECTIVE FUNCTION
