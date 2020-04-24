@@ -20,6 +20,9 @@ def pib(c0, c1, g, t0=0, t1=0, t=0, b0=0, b1=0, i=0):
     i: investimento
     '''
     global y        
+    
+    y = ( 1/(1 - c1 + c1*t1 - b1) )*(c0 - c1*t0 + b0 + g + i - c1*t)
+
      
     if t == 0:
         T = t0 + t1*y
@@ -31,8 +34,6 @@ def pib(c0, c1, g, t0=0, t1=0, t=0, b0=0, b1=0, i=0):
     else:
         I = i
     
-    y = ( 1/(1 - c1 + c1*t1 - b1) )*(c0 - c1*t0 + b0 + g + i - c1*t)
-       
          
     print('\033[1;033m')    
     print('{:*^40}'.format('Multiplicador da renda'))
@@ -48,13 +49,12 @@ def pib(c0, c1, g, t0=0, t1=0, t=0, b0=0, b1=0, i=0):
             
 
 
-pib(c0=179, c1=0.4, t=100, b0=120, b1=0.2, g=110)
+pib(c0=179, c1=0.4, t=100, b0=120, b1=0.2, i=0, g=110)
 
 
+369/0.4
 
 
-
-1000**(3/4)*1000**(1/4) 
 
 
 
