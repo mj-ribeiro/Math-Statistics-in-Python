@@ -7,7 +7,6 @@ Created on Tue Jun  2 20:43:23 2020
 
 #-- libraries
 
-import rope
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 
@@ -77,6 +76,9 @@ k
 
 
 
+#----- Variables and vectors
+
+
 vec = tf.constant([1, 5, 6], name='vec')
 
 s4 = tf.Variable(vec + 4, name='s4')
@@ -86,6 +88,43 @@ with tf.Session() as sess:
     sess.run(init)
     svec = sess.run(s4)
     print(svec)
+
+
+
+
+
+
+#-------- functions with tf
+import time
+from numba import jit, njit, vectorize
+
+init2 = tf.global_variables_initializer()
+
+
+def f(x):
+    v5 = tf.constant(0, name='v5')
+    with tf.Session() as sess:
+        sess.run(init2)
+        for i in range(x):
+            v5 = v5 + x
+            print(sess.run(v5))
+    
+
+
+%time f(100)
+
+v5
+
+
+
+
+
+
+
+
+
+
+
 
 
 
