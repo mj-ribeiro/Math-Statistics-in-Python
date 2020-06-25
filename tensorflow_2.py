@@ -5,7 +5,7 @@ Created on Tue Jun  2 21:52:05 2020
 @author: Marcos J Ribeiro
 """
 
-import plotnine
+
 
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
